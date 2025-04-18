@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv # No longer loading from .env here
 from typing import Optional
 
 from langchain_openai import ChatOpenAI
@@ -42,13 +42,7 @@ class EB1AData(BaseModel):
     eb1a_criteria: EB1ACriteria = Field(default_factory=EB1ACriteria)
     supporting_documents: SupportingDocuments = Field(default_factory=SupportingDocuments)
 
-# --- Load environment variables ---
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY not found.")
+# --- Removed API key loading from .env/os.environ ---
 
 # --- Define the Target JSON Structure String for the Prompt ---
 # EB1A_FIELDS_STRUCTURE = EB1AData.schema_json(indent=2) # Keep schema for reference if needed
@@ -134,16 +128,16 @@ Could you please share your email address?
 **Tone:** Professional, polite, systematic, encouraging detail.
 """
 
-def get_visa_agent_chain():
+def get_visa_agent_chain(openai_api_key: str):
     """Initializes and returns a LangChain ConversationChain.
-    The agent's responses are expected to contain tagged structured data.
-    """
-    if not api_key:
-        raise ValueError("OpenAI API key is missing.")
 
-    # Use a model known for good instruction following and JSON generation.
-    # gpt-4o-mini might work, but gpt-4o could be more reliable here.
-    llm = ChatOpenAI(temperature=0.2, model_name="gpt-4o-mini", openai_api_key=api_key)
+    Args:
+        openai_api_key: The OpenAI API key provided by the user.
+    """
+    if not openai_api_key:
+        raise ValueError("OpenAI API key is required to initialize the agent chain.")
+
+    llm = ChatOpenAI(temperature=0.2, model_name="gpt-4o-mini", openai_api_key=openai_api_key)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
